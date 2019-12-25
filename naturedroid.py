@@ -1,18 +1,15 @@
-import tweepy
 import random
 import math
 import os
 from moviepy.editor import *
+from twython import Twython
 
-CONSUMER_KEY = ''
-CONSUMER_SECRET = ''
-ACCESS_KEY = ''
-ACCESS_SECRET = ''
+APP_KEY = ''
+APP_SECRET = ''
+OAUTH_TOKEN = ''
+OAUTH_SECRET = ''
 
-auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-auth.set_access_token(ACCESS_KEY, ACCESS_SECRET)
-
-api = tweepy.API(auth)
+twitter = Twython(APP_KEY, APP_SECRET, OAUTH_TOKEN, OAUTH_SECRET)
 
 # Length of desired clip (in seconds)
 CLIP_LENGTH = 30
@@ -54,8 +51,9 @@ def main():
     clip.write_videofile("clip.mp4")
     # Convers audio to the codec Twitter likes
     os.system("ffmpeg -y -i clip.mp4 -c:v copy -c:a aac outfile.mp4")
-    upload_result = api.media_upload('outfile.mp4')
-    api.update_status(status="test tweet", media_ids=[upload_result.media_id_string])
+    video = open('outfile.mp4', 'rb')
+    response = twitter.upload_video(media=video, media_type='video/mp4')
+    twitter.update_status(status='', media_ids=[response['media_id']])
 
 # Starts the main function
 main()
