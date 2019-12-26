@@ -1,5 +1,5 @@
 # VibingNatureBot
-Twitter: @musicisnatura
+Twitter: @naturevibesbot
 
 A Twitter bot which randomly selects clips from nature documentaries and overlays music over them. 
 
