@@ -92,7 +92,6 @@ def reply_song_name():
 # main function
 def generate_and_tweet():
     print('Starting...')
-    song_list = os.listdir('songs/')
     print('Generating clip...')
     clip = create_clip()
     print('Writing video...')
@@ -104,6 +103,10 @@ def generate_and_tweet():
         os.remove('song_download.mp3')
     # converts audio to the codec twitter likes using ffmpeg
     os.system('ffmpeg -y -i clip.mp4 -c:v copy -c:a aac tweet.mp4')
+    # if using older version of ffmpeg
+    # os.system('ffmpeg -y -i clip.mp4 -c:v copy -c:a aac tweet.mp4')
+    # for older versions of ffmpeg
+    # os.system('ffmpeg -y -i clip.mp4 -c:v copy -strict experimental -c:a aac tweet.mp4')
     print('Tweeting video...')
     video = open('tweet.mp4', 'rb')
     response = twitter.upload_video(media=video, media_type='video/mp4')
