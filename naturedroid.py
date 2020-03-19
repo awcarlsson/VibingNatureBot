@@ -1,6 +1,7 @@
 import random
 import math
 import os
+import time
 from dotenv import load_dotenv
 from moviepy.editor import *
 from twython import Twython
@@ -91,7 +92,6 @@ def reply_song_name():
     
 # main function
 def generate_and_tweet():
-    print('Starting...')
     print('Generating clip...')
     clip = create_clip()
     print('Writing video...')
@@ -103,8 +103,6 @@ def generate_and_tweet():
         os.remove('song_download.mp3')
     # converts audio to the codec twitter likes using ffmpeg
     os.system('ffmpeg -y -i clip.mp4 -c:v copy -c:a aac tweet.mp4')
-    # if using older version of ffmpeg
-    # os.system('ffmpeg -y -i clip.mp4 -c:v copy -c:a aac tweet.mp4')
     # for older versions of ffmpeg
     # os.system('ffmpeg -y -i clip.mp4 -c:v copy -strict experimental -c:a aac tweet.mp4')
     print('Tweeting video...')
@@ -118,5 +116,9 @@ def generate_and_tweet():
     if (os.path.exists('tweet.mp4')):
         os.remove('tweet.mp4')
 
-# starts the main function
-generate_and_tweet()
+# loop to control when to tweet
+tweeting = True
+while tweeting:
+    print("Running")
+    generate_and_tweet()
+    time.sleep(3600)
