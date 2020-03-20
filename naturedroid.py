@@ -28,6 +28,12 @@ CLIP_LENGTH = 30
 # name of song for the current tweet
 song_name = ""
 
+# globals to assist with closing mp4/mp3 input streams
+mp4_download = None
+mp3_download = None
+mp4_subclip = None
+mp3_subclip = None
+
 # randomly selects a video and downloads it from cloud
 def download_video():
     bucket = storage_client.get_bucket('nature_docs')
@@ -41,13 +47,14 @@ def download_video():
 #  grabs a subclip from downloaded video
 def get_video():
     global CLIP_LENGTH
+    global mp4_download
+    global mp4_subclip
     download_video()
-    doc = VideoFileClip('vid_download.mp4')
-    doc_length = math.floor(doc.duration)
+    mp4_download = VideoFileClip('vid_download.mp4')
+    doc_length = math.floor(mp4_download.duration)
     start_time = random.randint(0, doc_length - CLIP_LENGTH - 1)
-    clip = doc.subclip(start_time, start_time + CLIP_LENGTH)
-    clip = clip.resize((1280, 720))
-    return clip
+    mp4_subclip = mp4_download.subclip(start_time, start_time + CLIP_LENGTH)
+    mp4_subclip = mp4_subclip.resize((1280, 720))
 
 # randomly selects a song and downloads it from cloud
 def download_song():
@@ -64,19 +71,21 @@ def download_song():
 # grabs a snippet from downloaded song
 def get_song():
     global CLIP_LENGTH
+    global mp3_download
+    global mp3_subclip
     download_song()
-    song = AudioFileClip('song_download.mp3')
-    song_length = math.floor(song.duration)
+    mp3_download = AudioFileClip('song_download.mp3')
+    song_length = math.floor(mp3_download.duration)
     start_time = random.randint(0, song_length - CLIP_LENGTH - 1)
-    mp3 = song.subclip(start_time, start_time + CLIP_LENGTH)
-    return mp3
+    mp3_subclip = mp3_download.subclip(start_time, start_time + CLIP_LENGTH)
 
 # creates a clip by combining footage from a nature documentary with a randomly selected song
 def create_clip():
-    mp3 = get_song()
-    clip = get_video()
-    clip = clip.set_audio(mp3)
-    return clip
+    global mp4_subclip
+    global mp3_subclip
+    get_video()
+    get_song()
+    mp4_subclip = mp4_subclip.set_audio(mp3_subclip)
 
 # replies to the new tweet with the name of the song (and animal emoji)
 def reply_song_name():
@@ -93,10 +102,14 @@ def reply_song_name():
 # main function
 def generate_and_tweet():
     print('Generating clip...')
-    clip = create_clip()
+    create_clip()
     print('Writing video...')
-    clip.write_videofile('clip.mp4')
+    mp4_subclip.write_videofile('clip.mp4')
     # cleans up from previous video creation steps
+    mp4_download.close()
+    mp3_download.close()
+    mp4_subclip.close()
+    mp3_subclip.close()
     if (os.path.exists('vid_download.mp4')):
         os.remove('vid_download.mp4')
     if (os.path.exists('song_download.mp3')):
@@ -109,6 +122,7 @@ def generate_and_tweet():
     video = open('tweet.mp4', 'rb')
     response = twitter.upload_video(media=video, media_type='video/mp4')
     twitter.update_status(status='', media_ids=[response['media_id']])
+    video.close()
     print('Done! Video has been tweeted.')
     reply_song_name()
     if (os.path.exists('clip.mp4')):
