@@ -59,7 +59,7 @@ def get_video():
 # randomly selects a song and downloads it from cloud
 def download_song():
     global song_name
-    bucket = storage_client.get_bucket('nature_songs')
+    bucket = storage_client.get_bucket('nature_songs_2')
     filenames = list(bucket.list_blobs(prefix = ''))
     song_num = random.randint(0, len(filenames) - 1)
     print('Chose song: ' + filenames[song_num].name)
